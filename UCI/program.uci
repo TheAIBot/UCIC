@@ -1,11 +1,12 @@
-#init numbers
+//init numbers
 ADDI R1 R0 5
 
-#test stuff
-ADD R2 R1 R1     #add the stuff
+//test stuff
+ADD R2 R1 R1     //add the stuff
 AND R3 R1 R2
+#LOOP
 SUB R4 R3 R2
 SRI R2 R1 1
-JMP R0 3
+JMP R0 LOOP
 
 
