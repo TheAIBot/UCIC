@@ -17,8 +17,8 @@ import UCI.ExceptionTypes.SyntaxException;
 public class UCICompiler
 {
 
-	public final Map<String, String> conversions = new HashMap<String, String>();
-	public final int instructionLength = 32;
+	private final Map<String, String> conversions = new HashMap<String, String>();
+	private final int instructionLength = 32;
 
 	public UCICompiler()
 	{
@@ -85,7 +85,7 @@ public class UCICompiler
 		return programLines;
 	}
 
-	public List<String> compile(List<String> allLines) throws Exception
+	private List<String> compile(List<String> allLines) throws Exception
 	{
 		List<ProgramLine> programLines = createProgramFromStrings(allLines);
 
