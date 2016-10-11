@@ -6,6 +6,6 @@ public class SyntaxException extends Exception
 {
 	public SyntaxException(ProgramLine programLine)
 	{
-		super("Syntax error on line " + programLine.lineNumber + "\n\"" + programLine.line + "\"");
+		super("Syntax error on line " + programLine.initialLineNumber + "\n\"" + programLine.line + "\"");
 	}
 }
