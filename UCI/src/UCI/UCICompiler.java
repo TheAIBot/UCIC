@@ -17,8 +17,8 @@ import UCI.ExceptionTypes.SyntaxException;
 public class UCICompiler
 {
 
-	private final Map<String, String> conversions = new HashMap<String, String>();
-	private final int instructionLength = 32;
+	public final Map<String, String> conversions = new HashMap<String, String>();
+	public final int instructionLength = 32;
 
 	public UCICompiler()
 	{
@@ -85,7 +85,7 @@ public class UCICompiler
 		return programLines;
 	}
 
-	private List<String> compile(List<String> allLines) throws Exception
+	public List<String> compile(List<String> allLines) throws Exception
 	{
 		List<ProgramLine> programLines = createProgramFromStrings(allLines);
 
@@ -109,7 +109,7 @@ public class UCICompiler
 			String binaryAssembly = convertUCIToBinaryAssembly(programLine, jmpTable);
 
 			// convert binary to hex
-			String hexAssembly = Converter.binaryStringToHexString(binaryAssembly);
+			String hexAssembly = Converter.binaryToHex(binaryAssembly);
 
 			// add line to program
 			hexProgram.add(programLine.lineNumber + " " + hexAssembly);
@@ -137,7 +137,7 @@ public class UCICompiler
 			{
 				// as it's the last string use the rest of the instruction bits
 				// to write the number
-				assemblyCommand += Converter.numberStringToBinaryString(command, cmdLength);
+				assemblyCommand += Converter.numberToBinary(Integer.valueOf(command), cmdLength);
 				cmdLength = 0;
 			}
 			// if command is found then it should be replaced with the
@@ -151,7 +151,7 @@ public class UCICompiler
 			//the line index assosiated with the command in jmpTable
 			else if (jmpTable.containsKey(command))
 			{
-				assemblyCommand += Converter.numberToBinaryString(jmpTable.get(command).intValue(), cmdLength);
+				assemblyCommand += Converter.numberToBinary(jmpTable.get(command).intValue(), cmdLength);
 				cmdLength = 0;
 			}
 			// if command is neither a number or a replacable then it's an
