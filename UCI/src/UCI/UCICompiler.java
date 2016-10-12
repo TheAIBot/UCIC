@@ -56,7 +56,7 @@ public class UCICompiler
 		return compile(allLines);
 	}
 
-	private List<ProgramLine> createProgramFromStrings(List<String> wholeProgram)
+	private List<ProgramLine> createProgramFromStrings(List<String> wholeProgram) throws SyntaxException
 	{
 		List<ProgramLine> programLines = new ArrayList<ProgramLine>();
 

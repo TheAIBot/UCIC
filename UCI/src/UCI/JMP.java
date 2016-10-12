@@ -39,9 +39,17 @@ public class JMP
 		return jmpTable;
 	}
 
-	public static boolean isJMPToLine(String line)
+	public static boolean isJMPToLine(ProgramLine programLine) throws SyntaxException
 	{
-		return line.contains(JMP_TO_PREFIX);
+		if (programLine.lineWithoutComments.contains(JMP_TO_PREFIX))
+		{
+			if (programLine.lineWithoutComments.startsWith(JMP_TO_PREFIX))
+			{
+				return true;
+			}
+			throw new SyntaxException(programLine);
+		}
+		return false;
 	}
 
 }

@@ -28,7 +28,16 @@ public class UCIC {
 				savePath = args[1];
 			}
 			else {
-				savePath = args[0].split("\\.")[0] + ".asm";
+				//if contains extension then remove it and add .asm
+				//only remove the last extension as there can be more than one
+				if (args[0].contains("."))
+				{
+					savePath = args[0].substring(0, args[0].lastIndexOf(".")) + ".asm";
+				}
+				//else just add .asm
+				else {
+					savePath = args[0] + ".asm";
+				}
 			}
 			
 			compiler.saveProgram(assembly, savePath);
