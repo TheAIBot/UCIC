@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+import UCI.CompilerOutputOptions;
 import UCI.UCICompiler;
 
 public class UCIC {
@@ -21,7 +22,9 @@ public class UCIC {
 		UCICompiler compiler = new UCICompiler();
 		
 		try {
-			List<String> assembly = compiler.compileFile(args[0]);
+			
+			CompilerOutputOptions cOutputOption = Arrays.asList(args).stream().anyMatch(x -> x.equals("--binary")) ? CompilerOutputOptions.BINARY : CompilerOutputOptions.HEXADECIMAL;
+			List<String> assembly = compiler.compileFile(args[0], cOutputOption);
 			
 			String savePath;
 			if (args.length == 2) {

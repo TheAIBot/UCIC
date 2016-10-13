@@ -49,7 +49,7 @@ public class UCICompiler
 		conversionInteger.put("LCD",    3);
 	}
 
-	public List<String> compileFile(String fileName) throws Exception
+	public List<String> compileFile(String fileName, CompilerOutputOptions cOutputOption) throws Exception
 	{
 		Path filePath = Paths.get(fileName);
 
@@ -59,7 +59,7 @@ public class UCICompiler
 		}
 
 		List<String> allLines = Files.readAllLines(filePath);
-		return compile(allLines);
+		return compile(allLines, cOutputOption);
 	}
 
 	private List<ProgramLine> createProgramFromStrings(List<String> wholeProgram) throws SyntaxException
@@ -91,7 +91,7 @@ public class UCICompiler
 		return programLines;
 	}
 
-	private List<String> compile(List<String> allLines) throws Exception
+	private List<String> compile(List<String> allLines, CompilerOutputOptions cOutputOption) throws Exception
 	{
 		List<ProgramLine> programLines = createProgramFromStrings(allLines);
 
@@ -102,26 +102,45 @@ public class UCICompiler
 		// purge old jmp to lines that was converterd to empty lines
 		programLines = purgeEmptyLines(programLines);
 
-		return compileProgramToHex(programLines, jmpTable);
+		List<String> compiledProgram = (cOutputOption == CompilerOutputOptions.BINARY) ? compileProgramToBinary(programLines, jmpTable) : compileProgramToHex(programLines, jmpTable);
+		
+		
+		return addHexLineNumber(compiledProgram);
 	}
 	
 	private List<String> compileProgramToHex(List<ProgramLine> programLines, Map<String, Integer> jmpTable) throws SyntaxException
 	{
-		List<String> hexProgram = new ArrayList<String>();
+		return compileProgramToBinary(programLines, jmpTable).stream()
+															 .map(x -> Converter.binaryToHex(x))
+															 .collect(Collectors.toList());
+	}
+	
+	private List<String> compileProgramToBinary(List<ProgramLine> programLines, Map<String, Integer> jmpTable) throws SyntaxException
+	{
+		List<String> binaryProgram = new ArrayList<String>();
 
 		for (ProgramLine programLine : programLines)
 		{
 			// convert line to binary
-			String binaryAssembly = convertUCIToBinaryAssembly(programLine, jmpTable);
+			binaryProgram.add(convertUCIToBinaryAssembly(programLine, jmpTable));
+		}
+		return binaryProgram;
+	}
+	
+	
+	
+	
+	private List<String> addHexLineNumber(List<String> program)
+	{
+		List<String> programWithLineNumber = new ArrayList<String>();
 
-			// convert binary to hex
-			String hexAssembly = Converter.binaryToHex(binaryAssembly);
-
-			// add line to program
-			hexProgram.add(Converter.binaryToHex(Converter.numberToBinary(programLine.lineNumber, String.valueOf(programLine.lineNumber).length()))  + " " + hexAssembly);
+		for (int i = 0; i < program.size(); i++)
+		{
+			String hexLineNumber = Converter.binaryToHex(Converter.numberToBinary(i, String.valueOf(i).length()));
+			programWithLineNumber.add(hexLineNumber  + " " + program.get(i));
 		}
 
-		return hexProgram;
+		return programWithLineNumber;
 	}
 
 	private String convertUCIToBinaryAssembly(ProgramLine programLine, Map<String, Integer> jmpTable) throws SyntaxException
