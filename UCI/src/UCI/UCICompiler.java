@@ -18,6 +18,7 @@ public class UCICompiler
 {
 
 	private final Map<String, String> conversions = new HashMap<String, String>();
+	private final Map<String, Integer> conversionInteger = new HashMap<String, Integer>();
 	private final int instructionLength = 32;
 
 	public UCICompiler()
@@ -28,7 +29,7 @@ public class UCICompiler
 		conversions.put("SUB", "010");
 		conversions.put("ADDI", "011");
 		conversions.put("SRI", "100");
-		conversions.put("STORE", "101");
+		conversions.put("STORE", "101000");
 		conversions.put("LOAD", "110");
 		conversions.put("JMP", "111");
 
@@ -41,6 +42,11 @@ public class UCICompiler
 		conversions.put("R5", "101");
 		conversions.put("R6", "110");
 		conversions.put("R7", "111");
+		
+		// register conversions
+		conversionInteger.put("SENSOR", 1);
+		conversionInteger.put("MEM", 	2);
+		conversionInteger.put("LCD",    3);
 	}
 
 	public List<String> compileFile(String fileName) throws Exception
@@ -112,7 +118,7 @@ public class UCICompiler
 			String hexAssembly = Converter.binaryToHex(binaryAssembly);
 
 			// add line to program
-			hexProgram.add(programLine.lineNumber + " " + hexAssembly);
+			hexProgram.add(Converter.binaryToHex(Converter.numberToBinary(programLine.lineNumber, String.valueOf(programLine.lineNumber).length()))  + " " + hexAssembly);
 		}
 
 		return hexProgram;
@@ -146,6 +152,11 @@ public class UCICompiler
 			{
 				assemblyCommand += conversions.get(command);
 				cmdLength -= conversions.get(command).length();
+			}
+			else if (conversionInteger.containsKey(command))
+			{
+				assemblyCommand += Converter.numberToBinary(conversionInteger.get(command).intValue(), cmdLength);
+				cmdLength = 0;
 			}
 			//if command is found in jmpTable then it should be replaced with
 			//the line index assosiated with the command in jmpTable
