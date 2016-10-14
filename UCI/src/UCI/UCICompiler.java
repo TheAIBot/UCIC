@@ -7,33 +7,31 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import UCI.ExceptionTypes.InvalidInstructionFormat;
 import UCI.ExceptionTypes.SyntaxException;
 
 public class UCICompiler
 {
 
-	private final Map<String, Instruction> instructions = new HashMap<String, Instruction>();
 	private final Map<String, String> conversions = new HashMap<String, String>();
-	
+	private final Map<String, Integer> conversionInteger = new HashMap<String, Integer>();
+	private final int instructionLength = 32;
 
-	public UCICompiler() throws InvalidInstructionFormat
+	public UCICompiler()
 	{
 		// instruction conversions
-		instructions.put("ADD",   new Instruction(new String[] {"000", "R3", "R3", "R3"}));
-		instructions.put("AND",   new Instruction(new String[] {"001", "R3", "R3", "R3"}));
-		instructions.put("SUB",   new Instruction(new String[] {"010", "R3", "R3", "R3"}));
-		instructions.put("ADDI",  new Instruction(new String[] {"011", "R3", "R3", "N23"}));
-		instructions.put("SRI",   new Instruction(new String[] {"100", "R3", "R3", "N23"}));
-		instructions.put("STORE", new Instruction(new String[] {"101", "000","R3", "R3", "N20"}));
-		instructions.put("LOAD",  new Instruction(new String[] {"110", "R3", "000","R3", "N20"}));
-		instructions.put("JMP",   new Instruction(new String[] {"111", "R3", "N26"}));
+		conversions.put("ADD", "000");
+		conversions.put("AND", "001");
+		conversions.put("SUB", "010");
+		conversions.put("ADDI", "011");
+		conversions.put("SRI", "100");
+		conversions.put("STORE", "101000");
+		conversions.put("LOAD", "110");
+		conversions.put("JMP", "111");
 
 		// register conversions
 		conversions.put("R0", "000");
@@ -45,9 +43,10 @@ public class UCICompiler
 		conversions.put("R6", "110");
 		conversions.put("R7", "111");
 		
-		conversions.put("SENSOR", "0001");
-		conversions.put("MEM", 	"0010");
-		conversions.put("LCD",    "0011");
+		// register conversions
+		conversionInteger.put("SENSOR", 1);
+		conversionInteger.put("MEM", 	2);
+		conversionInteger.put("LCD",    3);
 	}
 
 	public List<String> compileFile(String fileName, CompilerOutputOptions cOutputOption) throws Exception
@@ -128,6 +127,9 @@ public class UCICompiler
 		return binaryProgram;
 	}
 	
+	
+	
+	
 	private List<String> addHexLineNumber(List<String> program)
 	{
 		List<String> programWithLineNumber = new ArrayList<String>();
@@ -144,66 +146,61 @@ public class UCICompiler
 	private String convertUCIToBinaryAssembly(ProgramLine programLine, Map<String, Integer> jmpTable) throws SyntaxException
 	{
 		String[] commands = programLine.lineWithoutComments.split(" ");
-		
-		if (!instructions.containsKey(commands[0]))
-		{
-			throw new SyntaxException(programLine);
-		}
-		
-		Instruction instruction = instructions.get(commands[0]);
-		
-		if (commands.length - 1 != Arrays.asList(instruction.blockFormat).stream().filter(x -> x.type != InstructionBlockType.CONSTANT).count())
-		{
-			throw new SyntaxException(programLine);
-		}
-		
+		int cmdLength = instructionLength;
 		String assemblyCommand = "";
-		int commandIndex = 1;
-		for (InstructionBlock instructionBlock : instruction.blockFormat)
+		for (String command : commands)
 		{
-			if (instructionBlock.type == InstructionBlockType.CONSTANT)
+			if (cmdLength < 0)
 			{
-				assemblyCommand += instructionBlock.format;
+				throw new SyntaxException(programLine);
 			}
-			else if (instructionBlock.type == InstructionBlockType.REPLACABLE)
+			
+			// it's assumed that a number in an assembly line will always be the
+			// last command
+			// which means that an assembly command can only contain 1 number at the end ofthe command
+			if (command.matches("\\d*"))
 			{
-				if (!conversions.containsKey(commands[commandIndex]))
-				{
-					throw new SyntaxException(programLine);
-				}
-				
-				assemblyCommand += String.format("%0" + String.valueOf(instructionBlock.bitLength) + "d", Integer.valueOf(conversions.get(commands[commandIndex])));
-				commandIndex++;
+				// as it's the last string use the rest of the instruction bits
+				// to write the number
+				assemblyCommand += Converter.numberToBinary(Integer.valueOf(command), cmdLength);
+				cmdLength = 0;
 			}
-			else if (instructionBlock.type == InstructionBlockType.NUMBER)
+			// if command is found then it should be replaced with the
+			// binary value
+			else if (conversions.containsKey(command))
 			{
-				int number = 0;
-				
-				if (commands[commandIndex].matches("\\d+"))
-				{
-					number = Integer.valueOf(commands[commandIndex]);
-					assemblyCommand += Converter.numberToBinary(Integer.valueOf(commands[commandIndex]), instructionBlock.bitLength);
-					commandIndex++;
-				}
-				else if (conversions.containsKey(commands[commandIndex]))
-				{
-					assemblyCommand += conversions.get(commands[commandIndex]);
-					commandIndex++;
-					continue;
-				}
-				else if (jmpTable.containsKey(commands[commandIndex]))
-				{
-					assemblyCommand += Converter.numberToBinary(jmpTable.get(commands[commandIndex]).intValue(), instructionBlock.bitLength);
-					commandIndex++;
-					continue;
-				}
-				else {
-					throw new SyntaxException(programLine);
-				}
-				
-				assemblyCommand += String.format("%0" + String.valueOf(instructionBlock.bitLength) + "d", number);
-				commandIndex++;
+				assemblyCommand += conversions.get(command);
+				cmdLength -= conversions.get(command).length();
 			}
+			else if (conversionInteger.containsKey(command))
+			{
+				assemblyCommand += Converter.numberToBinary(conversionInteger.get(command).intValue(), cmdLength);
+				cmdLength = 0;
+			}
+			//if command is found in jmpTable then it should be replaced with
+			//the line index assosiated with the command in jmpTable
+			else if (jmpTable.containsKey(command))
+			{
+				assemblyCommand += Converter.numberToBinary(jmpTable.get(command).intValue(), cmdLength);
+				cmdLength = 0;
+			}
+			// if command is neither a number or a replacable then it's an
+			// error
+			else
+			{
+				throw new SyntaxException(programLine);
+			}
+		}
+		
+		if (cmdLength < 0)
+		{
+			throw new SyntaxException(programLine);
+		}
+
+		// if all instruction bits wasn't used then add 0 for the rest
+		if (cmdLength > 0)
+		{
+			assemblyCommand += String.format("%0" + cmdLength + "d", 0);
 		}
 
 		return assemblyCommand;

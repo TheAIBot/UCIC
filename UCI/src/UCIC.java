@@ -20,10 +20,9 @@ public class UCIC {
 			return;
 		}
 				
-		
+		UCICompiler compiler = new UCICompiler();
 		
 		try {
-			UCICompiler compiler = new UCICompiler();
 			
 			CompilerOutputOptions cOutputOption = CompilerFlags.getCompilerOutputOption(args);
 			
