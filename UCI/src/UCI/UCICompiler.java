@@ -32,7 +32,7 @@ public class UCICompiler
 		instructions.put("ADDI",  new Instruction(new String[] {"011", "R3", "R3", "N23"}));
 		instructions.put("SRI",   new Instruction(new String[] {"100", "R3", "R3", "N23"}));
 		instructions.put("STORE", new Instruction(new String[] {"101", "000","R3", "R3", "N20"}));
-		instructions.put("LOAD",  new Instruction(new String[] {"110", "R3", "000","R3", "N20"}));
+		instructions.put("LOAD",  new Instruction(new String[] {"110", "R3", "R3", "N23"}));
 		instructions.put("JMP",   new Instruction(new String[] {"111", "R3", "N26"}));
 
 		// register conversions
@@ -46,8 +46,9 @@ public class UCICompiler
 		conversions.put("R7", "111");
 		
 		conversions.put("SENSOR", "0001");
-		conversions.put("MEM", 	"0010");
+		conversions.put("MEM", 	  "0010");
 		conversions.put("LCD",    "0011");
+		conversions.put("CACHE",  "0100");
 	}
 
 	public List<String> compileFile(String fileName, CompilerOutputOptions cOutputOption) throws Exception
@@ -160,48 +161,44 @@ public class UCICompiler
 		String assemblyCommand = "";
 		int commandIndex = 1;
 		for (InstructionBlock instructionBlock : instruction.blockFormat)
-		{
+		{			
 			if (instructionBlock.type == InstructionBlockType.CONSTANT)
 			{
 				assemblyCommand += instructionBlock.format;
 			}
 			else if (instructionBlock.type == InstructionBlockType.REPLACABLE)
 			{
-				if (!conversions.containsKey(commands[commandIndex]))
+				String command = commands[commandIndex];
+				
+				if (!conversions.containsKey(command))
 				{
 					throw new SyntaxException(programLine);
 				}
 				
-				assemblyCommand += String.format("%0" + String.valueOf(instructionBlock.bitLength) + "d", Integer.valueOf(conversions.get(commands[commandIndex])));
+				assemblyCommand += String.format("%0" + String.valueOf(instructionBlock.bitLength) + "d", Integer.valueOf(conversions.get(command)));
 				commandIndex++;
 			}
 			else if (instructionBlock.type == InstructionBlockType.NUMBER)
 			{
-				int number = 0;
+				String command = commands[commandIndex];
 				
-				if (commands[commandIndex].matches("\\d+"))
+				if (command.matches("\\d+"))
 				{
-					number = Integer.valueOf(commands[commandIndex]);
-					assemblyCommand += Converter.numberToBinary(Integer.valueOf(commands[commandIndex]), instructionBlock.bitLength);
-					commandIndex++;
+					assemblyCommand += Converter.numberToBinary(Integer.valueOf(command), instructionBlock.bitLength);
 				}
-				else if (conversions.containsKey(commands[commandIndex]))
+				else if (conversions.containsKey(command))
 				{
-					assemblyCommand += conversions.get(commands[commandIndex]);
-					commandIndex++;
-					continue;
+					assemblyCommand += String.format("%0" + String.valueOf(instructionBlock.bitLength) + "s",  conversions.get(command));
 				}
-				else if (jmpTable.containsKey(commands[commandIndex]))
+				else if (jmpTable.containsKey(command))
 				{
-					assemblyCommand += Converter.numberToBinary(jmpTable.get(commands[commandIndex]).intValue(), instructionBlock.bitLength);
-					commandIndex++;
-					continue;
+					assemblyCommand += Converter.numberToBinary(jmpTable.get(command).intValue(), instructionBlock.bitLength);
 				}
-				else {
+				else 
+				{
 					throw new SyntaxException(programLine);
 				}
 				
-				assemblyCommand += String.format("%0" + String.valueOf(instructionBlock.bitLength) + "d", number);
 				commandIndex++;
 			}
 		}

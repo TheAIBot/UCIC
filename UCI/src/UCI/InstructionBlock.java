@@ -1,5 +1,7 @@
 package UCI;
 
+import UCI.ExceptionTypes.SyntaxException;
+
 public class InstructionBlock
 {
 	public final String format;

@@ -52,7 +52,7 @@ public class Instruction
 		{
 			throw new InvalidInstructionFormat("Too many bits designated", format);
 		}
-		else {
+		else if (instructionLength > 0) {
 			int bitSize = instructionLength;
 			char[] array = new char[instructionLength];
 		    Arrays.fill(array, '0');
