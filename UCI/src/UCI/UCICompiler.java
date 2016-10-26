@@ -19,19 +19,21 @@ public class UCICompiler
 
 	private final Map<String, String> conversions = new HashMap<String, String>();
 	private final Map<String, Integer> conversionInteger = new HashMap<String, Integer>();
-	private final int instructionLength = 32;
+	private final int instructionLength = 15;
 
 	public UCICompiler()
 	{
 		// instruction conversions
 		conversions.put("ADD", "000");
-		conversions.put("AND", "001");
+		conversions.put("ADDI", "001");
 		conversions.put("SUB", "010");
-		conversions.put("ADDI", "011");
-		conversions.put("SRI", "100");
-		conversions.put("STORE", "101000");
-		conversions.put("LOAD", "110");
-		conversions.put("JMP", "111");
+		conversions.put("AND", "011");
+		
+		
+		conversions.put("RSHIFT", "100");
+		conversions.put("LOAD", "101");
+		conversions.put("STORE", "110");
+		conversions.put("BRANCH", "111");
 
 		// register conversions
 		conversions.put("R0", "000");
