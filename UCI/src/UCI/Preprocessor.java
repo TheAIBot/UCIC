@@ -17,6 +17,7 @@ public class Preprocessor {
 	
 	public static String removeAnyComments(String line)
 	{
+		line = line.trim();
 		if (line.isEmpty()) {
 			return line;
 		}
@@ -26,7 +27,7 @@ public class Preprocessor {
 		}
 		
 		int commentCharIndex = line.indexOf(COMMENT_CHAR);
-		return line.substring(0, commentCharIndex).trim();
+		return line.substring(0, commentCharIndex);
 	}
 	
 }

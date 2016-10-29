@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.rmi.UnexpectedException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,10 +19,10 @@ import UCI.ExceptionTypes.SyntaxException;
 
 public class UCICompiler
 {
+	private static final int INSTRUCTION_LENGTH = 32;
 
 	private final Map<String, Instruction> instructions = new HashMap<String, Instruction>();
 	private final Map<String, String> conversions = new HashMap<String, String>();
-	
 
 	public UCICompiler() throws InvalidInstructionFormat
 	{
@@ -31,8 +32,8 @@ public class UCICompiler
 		instructions.put("SUB",   new Instruction(new String[] {"010", "R3", "R3", "R3"}));
 		instructions.put("ADDI",  new Instruction(new String[] {"011", "R3", "R3", "N23"}));
 		instructions.put("SRI",   new Instruction(new String[] {"100", "R3", "R3", "N23"}));
-		instructions.put("STORE", new Instruction(new String[] {"101", "000","R3", "R3", "N20"}));
-		instructions.put("LOAD",  new Instruction(new String[] {"110", "R3", "R3", "N23"}));
+		instructions.put("STORE", new Instruction(new String[] {"101", "000","R3", "R3", "R20"}));
+		instructions.put("LOAD",  new Instruction(new String[] {"110", "R3", "R3", "R23"}));
 		instructions.put("JMP",   new Instruction(new String[] {"111", "R3", "N26"}));
 
 		// register conversions
@@ -93,7 +94,7 @@ public class UCICompiler
 		return programLines;
 	}
 
-	private List<String> compile(List<String> allLines, CompilerOutputOptions cOutputOption) throws Exception
+	public List<String> compile(List<String> allLines, CompilerOutputOptions cOutputOption) throws Exception
 	{
 		List<ProgramLine> programLines = createProgramFromStrings(allLines);
 
@@ -110,14 +111,14 @@ public class UCICompiler
 		return addHexLineNumber(compiledProgram);
 	}
 	
-	private List<String> compileProgramToHex(List<ProgramLine> programLines, Map<String, Integer> jmpTable) throws SyntaxException
+	private List<String> compileProgramToHex(List<ProgramLine> programLines, Map<String, Integer> jmpTable) throws Exception
 	{
 		return compileProgramToBinary(programLines, jmpTable).stream()
 															 .map(x -> Converter.binaryToHex(x))
 															 .collect(Collectors.toList());
 	}
 	
-	private List<String> compileProgramToBinary(List<ProgramLine> programLines, Map<String, Integer> jmpTable) throws SyntaxException
+	private List<String> compileProgramToBinary(List<ProgramLine> programLines, Map<String, Integer> jmpTable) throws Exception
 	{
 		List<String> binaryProgram = new ArrayList<String>();
 
@@ -135,14 +136,14 @@ public class UCICompiler
 
 		for (int i = 0; i < program.size(); i++)
 		{
-			String hexLineNumber = Converter.binaryToHex(Converter.numberToBinary(i, String.valueOf(i).length()));
+			String hexLineNumber = Integer.toHexString(i);
 			programWithLineNumber.add(hexLineNumber  + " " + program.get(i));
 		}
 
 		return programWithLineNumber;
 	}
 
-	private String convertUCIToBinaryAssembly(ProgramLine programLine, Map<String, Integer> jmpTable) throws SyntaxException
+	private String convertUCIToBinaryAssembly(ProgramLine programLine, Map<String, Integer> jmpTable) throws Exception
 	{
 		String[] commands = programLine.lineWithoutComments.split(" ");
 		
@@ -175,20 +176,16 @@ public class UCICompiler
 					throw new SyntaxException(programLine);
 				}
 				
-				assemblyCommand += String.format("%0" + String.valueOf(instructionBlock.bitLength) + "d", Integer.valueOf(conversions.get(command)));
+				assemblyCommand += Converter.setBinaryStringToLength(conversions.get(command), instructionBlock.bitLength);
 				commandIndex++;
 			}
 			else if (instructionBlock.type == InstructionBlockType.NUMBER)
 			{
 				String command = commands[commandIndex];
 				
-				if (command.matches("\\d+"))
+				if (command.matches("^[+-]?\\d+$"))
 				{
 					assemblyCommand += Converter.numberToBinary(Integer.valueOf(command), instructionBlock.bitLength);
-				}
-				else if (conversions.containsKey(command))
-				{
-					assemblyCommand += String.format("%0" + String.valueOf(instructionBlock.bitLength) + "s",  conversions.get(command));
 				}
 				else if (jmpTable.containsKey(command))
 				{
@@ -201,6 +198,11 @@ public class UCICompiler
 				
 				commandIndex++;
 			}
+		}
+		
+		if (assemblyCommand.length() != INSTRUCTION_LENGTH)
+		{
+			throw new UnexpectedException("Instruction length doeesn't match the expected length");
 		}
 
 		return assemblyCommand;
