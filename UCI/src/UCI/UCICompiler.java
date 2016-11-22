@@ -27,14 +27,19 @@ public class UCICompiler
 	public UCICompiler() throws InvalidInstructionFormat
 	{
 		// instruction conversions
-		instructions.put("ADD",   new Instruction(new String[] {"000", "R3", "R3", "R3"}));
-		instructions.put("AND",   new Instruction(new String[] {"001", "R3", "R3", "R3"}));
-		instructions.put("SUB",   new Instruction(new String[] {"010", "R3", "R3", "R3"}));
-		instructions.put("ADDI",  new Instruction(new String[] {"011", "R3", "R3", "N23"}));
-		instructions.put("SRI",   new Instruction(new String[] {"100", "R3", "R3", "N23"}));
-		instructions.put("STORE", new Instruction(new String[] {"101", "000","R3", "R3", "R20"}));
-		instructions.put("LOAD",  new Instruction(new String[] {"110", "R3", "R3", "R23"}));
-		instructions.put("JMP",   new Instruction(new String[] {"111", "R3", "N26"}));
+		instructions.put("ADD",    new Instruction(new String[] {"000", "R3", "R3", "R3"}));
+		instructions.put("AND",    new Instruction(new String[] {"001", "R3", "R3", "R3"}));
+		instructions.put("SUB",    new Instruction(new String[] {"010", "R3", "R3", "R3"}));
+		instructions.put("ADDI",   new Instruction(new String[] {"011", "R3", "R3", "000", "N20"}));
+		instructions.put("SRI",    new Instruction(new String[] {"100", "R3", "R3", "000", "N20"}));
+		instructions.put("STORE",  new Instruction(new String[] {"101", "000","R3", "R3",  "R2",  "R18"}));
+		instructions.put("LOAD",   new Instruction(new String[] {"110", "R3", "R3", "000", "00000000000000", "10",  "R4"}));
+		instructions.put("LOADASY",new Instruction(new String[] {"110", "000","R3", "000", "00000000000000", "00",  "R4"}));
+		instructions.put("LOADAWT",new Instruction(new String[] {"110", "R3", "000","000", "00000000000000", "01",  "R4"}));
+		instructions.put("COP",    new Instruction(new String[] {"110", "R3", "R3", "000", "00000000000000", "10", "0101"}));
+		instructions.put("COPASY", new Instruction(new String[] {"110", "000","R3", "000", "00000000000000", "00", "0101"}));
+		instructions.put("COPAWT", new Instruction(new String[] {"110", "R3", "000","000", "00000000000000", "01", "0101"}));
+		instructions.put("JMP",    new Instruction(new String[] {"111", "000000000", 	  "N20"}));
 
 		// register conversions
 		conversions.put("R0", "000");
@@ -46,10 +51,18 @@ public class UCICompiler
 		conversions.put("R6", "110");
 		conversions.put("R7", "111");
 		
-		conversions.put("SENSOR", "0001");
-		conversions.put("MEM", 	  "0010");
-		conversions.put("LCD",    "0011");
-		conversions.put("CACHE",  "0100");
+		conversions.put("SENSOR", "0001"); //1
+		conversions.put("MEM", 	  "0010"); //2
+		conversions.put("LCD",    "0011"); //3
+		conversions.put("CACHE",  "0100"); //4
+		conversions.put("COP_CPU","0101"); //5
+		conversions.put("COP_BUS","0110"); //6
+		
+		conversions.put("ASYNC",  "00");
+		conversions.put("AWAIT",  "01");
+		conversions.put("STALL",  "10");
+		
+		
 	}
 
 	public List<String> compileFile(String fileName, CompilerOutputOptions cOutputOption) throws Exception

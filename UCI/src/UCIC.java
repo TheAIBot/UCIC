@@ -8,6 +8,7 @@ import java.util.*;
 
 import UCI.CompilerFlags;
 import UCI.CompilerOutputOptions;
+import UCI.Converter;
 import UCI.UCICompiler;
 
 public class UCIC {
@@ -19,7 +20,28 @@ public class UCIC {
 			System.out.println("Missing filename as argument");
 			return;
 		}
-				
+		/*
+		try
+		{
+			List<String> fisk = Files.readAllLines(Paths.get("datamemory10000.txt"));
+			List<String> result = new ArrayList<String>();
+			
+			int index = 1;
+			for (String string : fisk)
+			{
+				result.add(Integer.toHexString(index) + " " + Integer.toHexString(Integer.valueOf(string)));
+				index++;
+			}
+			
+			Files.write(Paths.get("datamemory10000fixed.txt"), result, Charset.forName("UTF-8"));
+			
+			
+		} catch (IOException e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		*/		
 		
 		
 		try {

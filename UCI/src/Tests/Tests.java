@@ -16,7 +16,6 @@ import UCI.CompilerOutputOptions;
 import UCI.JMP;
 import UCI.OperatorType;
 import UCI.ProgramLine;
-import UCI.ThrowingCaller;
 import UCI.UCICompiler;
 import UCI.ExceptionTypes.SyntaxException;
 
