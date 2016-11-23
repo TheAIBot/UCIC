@@ -27,19 +27,21 @@ public class UCICompiler
 	public UCICompiler() throws InvalidInstructionFormat
 	{
 		// instruction conversions
-		instructions.put("ADD",    new Instruction(new String[] {"000", "R3", "R3", "R3"}));
-		instructions.put("AND",    new Instruction(new String[] {"001", "R3", "R3", "R3"}));
-		instructions.put("SUB",    new Instruction(new String[] {"010", "R3", "R3", "R3"}));
-		instructions.put("ADDI",   new Instruction(new String[] {"011", "R3", "R3", "000", "N20"}));
-		instructions.put("SRI",    new Instruction(new String[] {"100", "R3", "R3", "000", "N20"}));
-		instructions.put("STORE",  new Instruction(new String[] {"101", "000","R3", "R3",  "R2",  "R18"}));
-		instructions.put("LOAD",   new Instruction(new String[] {"110", "R3", "R3", "000", "00000000000000", "10",  "R4"}));
-		instructions.put("LOADASY",new Instruction(new String[] {"110", "000","R3", "000", "00000000000000", "00",  "R4"}));
-		instructions.put("LOADAWT",new Instruction(new String[] {"110", "R3", "000","000", "00000000000000", "01",  "R4"}));
-		instructions.put("COP",    new Instruction(new String[] {"110", "R3", "R3", "000", "00000000000000", "10", "0101"}));
-		instructions.put("COPASY", new Instruction(new String[] {"110", "000","R3", "000", "00000000000000", "00", "0101"}));
-		instructions.put("COPAWT", new Instruction(new String[] {"110", "R3", "000","000", "00000000000000", "01", "0101"}));
-		instructions.put("JMP",    new Instruction(new String[] {"111", "000000000", 	  "N20"}));
+		instructions.put("ADD",       new Instruction(new String[] {"000", "R3", "R3", "R3"}));
+		instructions.put("AND",       new Instruction(new String[] {"001", "R3", "R3", "R3"}));
+		instructions.put("SUB",       new Instruction(new String[] {"010", "R3", "R3", "R3"}));
+		instructions.put("ADDI",      new Instruction(new String[] {"011", "R3", "R3", "000", "N20"}));
+		instructions.put("SRI",       new Instruction(new String[] {"100", "R3", "R3", "000", "N20"}));
+		instructions.put("STORE",     new Instruction(new String[] {"101", "000","R3", "R3",  "00000000000000", "10",  "R4"}));
+		instructions.put("STOREASY",  new Instruction(new String[] {"101", "000","R3", "R3",  "00000000000000", "00",  "R4"}));
+		instructions.put("STOREAWT",  new Instruction(new String[] {"101", "000","000","000", "00000000000000", "01",  "R4"}));
+		instructions.put("LOAD",      new Instruction(new String[] {"110", "R3", "R3", "000", "00000000000000", "10",  "R4"}));
+		instructions.put("LOADASY",   new Instruction(new String[] {"110", "000","R3", "000", "00000000000000", "00",  "R4"}));
+		instructions.put("LOADAWT",   new Instruction(new String[] {"110", "R3", "000","000", "00000000000000", "01",  "R4"}));
+		instructions.put("COP",       new Instruction(new String[] {"110", "R3", "R3", "000", "00000000000000", "10", "0101"}));
+		instructions.put("COPASY",    new Instruction(new String[] {"110", "000","R3", "000", "00000000000000", "00", "0101"}));
+		instructions.put("COPAWT",    new Instruction(new String[] {"110", "R3", "000","000", "00000000000000", "01", "0101"}));
+		instructions.put("JMP",       new Instruction(new String[] {"111", "000000000", 	  "N20"}));
 
 		// register conversions
 		conversions.put("R0", "000");
